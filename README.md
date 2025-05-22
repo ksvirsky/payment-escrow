@@ -1,0 +1,82 @@
+# Payment Escrow
+
+This project implements a basic payment escrow functionality, enabling secure transfer of funds between two parties.
+
+---
+
+## Implementation
+
+### V1
+
+The `PaymentEscrowFactory` contract facilitates the creation of `PaymentEscrow` contracts. A `PaymentEscrow` contract is initiated by Party A for a specified target, Party B.
+
+#### Core Flows:
+
+##### 1. Normal Flow (Successful Payment)
+
+This flow represents a successful payment from Party A to Party B.
+
+1.  **Contract Configuration & Funding:** Party A deploys the `PaymentEscrow` contract and transfers the agreed-upon tokens to it.
+2.  **Payment Condition:** Party B awaits for the `paymentDelay` period to elapse, or Party A can call `confirmPayment()` to immediately enable withdrawal.
+3.  **Withdrawal:** After the `paymentDelay` or explicit confirmation by Party A, Party B can withdraw all tokens from the contract.
+
+##### 2. Challenge Flow (Party A Cancels Payment)
+
+This flow allows Party A to cancel the payment before Party B can withdraw.
+
+1.  **Contract Configuration & Funding:** Party A deploys the `PaymentEscrow` contract and transfers the agreed-upon tokens to it.
+2.  **Challenge Initiation:** During the `paymentDelay` period, Party A invokes the `challenge()` function to initiate a cancellation.
+3.  **Challenge Condition:** Party A waits for the `challengeDelay` period to elapse, or Party B can call `confirmChallenge()` to immediately allow Party A's withdrawal.
+4.  **Withdrawal:** After the `challengeDelay` or explicit confirmation by Party B, Party A can withdraw all tokens from the contract.
+
+##### 3. Disputable Flow (Dispute Resolution)
+
+This flow is initiated if Party B disputes Party A's challenge.
+
+1.  **Dispute Initiation:** This flow begins when Party B calls the `dispute()` function during Party A's `challengeDelay` period (from the Challenge Flow, step 3).
+2.  **Party B's Waiting Period:** Party B must wait for the `disputeDelay` period to elapse. After this period, Party B can withdraw the funds.
+3.  **Party A's Re-dispute:** Party A can then re-dispute by calling `dispute()` again. Party A must then wait for another `disputeDelay` period to elapse to regain the ability to withdraw the funds.
+4.  **Flow Termination:** The disputable flow concludes when either Party A or Party B chooses not to re-dispute, allowing the other party to withdraw the funds. Alternatively, the flow can be terminated if one of the parties calls `confirmPayment()` (by Party A, leading to Party B's withdrawal) or `confirmChallenge()` (by Party B, leading to Party A's withdrawal).
+
+#### Configuration Parameters:
+
+Each `PaymentEscrow` contract is created with the following configurable parameters:
+
+* `targetAddress`: The account address of Party B.
+* `paymentDelay`: The duration (in seconds) after which Party B is allowed to withdraw funds in the normal flow.
+* `challengeDelay`: The duration (in seconds) during which Party A can challenge the payment. This also defines the waiting period for Party A to withdraw after a successful challenge.
+* `disputeDelay`: The duration (in seconds) that each party must wait during the disputable flow after initiating a dispute or re-dispute.
+
+#### `PaymentEscrow` Contract Functions & Features:
+
+1.  **Token Acceptance:** The contract is designed to accept any amount of ERC-20 or other transferable tokens directly transferred to it. While it's assumed Party A will transfer tokens, the contract's design doesn't restrict token transfers from any other account.
+2.  **`confirmPayment()`:** Allows Party A to confirm the payment, enabling Party B to withdraw the funds immediately, bypassing the `paymentDelay`.
+3.  **`confirmChallenge()`:** Allows Party B to confirm Party A's challenge, enabling Party A to withdraw the funds immediately, bypassing the `challengeDelay`.
+4.  **`withdraw(address token, uint256 amount)`:** This function facilitates token withdrawals:
+    * **For Party B:** When `paymentDelay` has elapsed, or `confirmPayment()` has been called.
+    * **For Party A:** When `challengeDelay` has elapsed, or `confirmChallenge()` has been called (after a successful challenge).
+    * **For Either Party:** When the corresponding party's `disputeDelay` has elapsed in the disputable flow.
+5.  **`challenge()`:** Allows Party A to initiate a challenge, preventing Party B from withdrawing for `challengeDelay` seconds.
+6.  **`dispute()`:** Allows either Party A or Party B to dispute an ongoing challenge or re-dispute, respectively, extending the dispute resolution process.
+
+---
+
+## Roadmap
+
+1.  **Upgradeable Factory:** Implement an upgradeable factory contract to enable the creation of `PaymentEscrow` contracts of different versions, facilitating future enhancements.
+2.  **Third-Party Arbiter:** Introduce a neutral third party to resolve disputes, enhancing fairness and reducing reliance on the current disputable flow's "last party standing" mechanism.
+3.  **Native Token Support:** Add support for using the native blockchain token (e.g., Ether on Ethereum) in payments, alongside ERC-20 tokens.
+4.  **Multi-Payment Escrow:** Extend the escrow contract to support multiple payments to the same or different parties within a single escrow instance.
+
+---
+
+## Getting Started
+
+To interact with this project, use the following commands:
+
+```shell
+npm run test                  # Run all unit tests
+REPORT_GAS=true npm run test  # Run tests and generate a gas usage report
+
+npx hardhat node              # Start a local Hardhat network node
+npx hardhat ignition deploy ./ignition/modules/Deploy.ts # Deploy contracts using Hardhat Ignition
