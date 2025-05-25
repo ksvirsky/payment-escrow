@@ -20,23 +20,23 @@ This flow represents a successful payment from Party A to Party B.
 2.  **Payment Condition:** Party B awaits for the `paymentDelay` period to elapse, or Party A can call `confirmPayment()` to immediately enable withdrawal.
 3.  **Withdrawal:** After the `paymentDelay` or explicit confirmation by Party A, Party B can withdraw all tokens from the contract.
 
-##### 2. Challenge Flow (Party A Cancels Payment)
+##### 2. Cancel Payment Flow (by Party A)
 
 This flow allows Party A to cancel the payment before Party B can withdraw.
 
 1.  **Contract Configuration & Funding:** Party A deploys the `PaymentEscrow` contract and transfers the agreed-upon tokens to it.
-2.  **Challenge Initiation:** During the `paymentDelay` period, Party A invokes the `challenge()` function to initiate a cancellation.
-3.  **Challenge Condition:** Party A waits for the `challengeDelay` period to elapse, or Party B can call `confirmChallenge()` to immediately allow Party A's withdrawal.
-4.  **Withdrawal:** After the `challengeDelay` or explicit confirmation by Party B, Party A can withdraw all tokens from the contract.
+2.  **Cancel Payment Initiation:** During the `paymentDelay` period, Party A invokes the `cancelPayment()` function to initiate a cancellation.
+3.  **Cancel Payment Condition:** Party A waits for the `cancelDelay` period to elapse, or Party B can call `confirmCancelPayment()` to immediately allow Party A's withdrawal.
+4.  **Withdrawal:** After the `cancelDelay` or explicit confirmation by Party B, Party A can withdraw all tokens from the contract.
 
 ##### 3. Disputable Flow (Dispute Resolution)
 
-This flow is initiated if Party B disputes Party A's challenge.
+This flow is initiated if Party B disputes Party A's cancellation of payment.
 
-1.  **Dispute Initiation:** This flow begins when Party B calls the `dispute()` function during Party A's `challengeDelay` period (from the Challenge Flow, step 3).
+1.  **Dispute Initiation:** This flow begins when Party B calls the `dispute()` function during Party A's `cancelDelay` period (from the Cancel Payment Flow, step 3).
 2.  **Party B's Waiting Period:** Party B must wait for the `disputeDelay` period to elapse. After this period, Party B can withdraw the funds.
 3.  **Party A's Re-dispute:** Party A can then re-dispute by calling `dispute()` again. Party A must then wait for another `disputeDelay` period to elapse to regain the ability to withdraw the funds.
-4.  **Flow Termination:** The disputable flow concludes when either Party A or Party B chooses not to re-dispute, allowing the other party to withdraw the funds. Alternatively, the flow can be terminated if one of the parties calls `confirmPayment()` (by Party A, leading to Party B's withdrawal) or `confirmChallenge()` (by Party B, leading to Party A's withdrawal).
+4.  **Flow Termination:** The disputable flow concludes when either Party A or Party B chooses not to re-dispute, allowing the other party to withdraw the funds. Alternatively, the flow can be terminated if one of the parties calls `confirmPayment()` (by Party A, leading to Party B's withdrawal) or `confirmCancelPayment()` (by Party B, leading to Party A's withdrawal).
 
 #### Configuration Parameters:
 
@@ -44,20 +44,20 @@ Each `PaymentEscrow` contract is created with the following configurable paramet
 
 * `targetAddress`: The account address of Party B.
 * `paymentDelay`: The duration (in seconds) after which Party B is allowed to withdraw funds in the normal flow.
-* `challengeDelay`: The duration (in seconds) during which Party A can challenge the payment. This also defines the waiting period for Party A to withdraw after a successful challenge.
+* `cancelDelay`:  The duration (in seconds) defines the waiting period for Party A to allow withdrawals after cancellation of the payment.
 * `disputeDelay`: The duration (in seconds) that each party must wait during the disputable flow after initiating a dispute or re-dispute.
 
 #### `PaymentEscrow` Contract Functions & Features:
 
 1.  **Token Acceptance:** The contract is designed to accept any amount of ERC-20 or other transferable tokens directly transferred to it. While it's assumed Party A will transfer tokens, the contract's design doesn't restrict token transfers from any other account.
 2.  **`confirmPayment()`:** Allows Party A to confirm the payment, enabling Party B to withdraw the funds immediately, bypassing the `paymentDelay`.
-3.  **`confirmChallenge()`:** Allows Party B to confirm Party A's challenge, enabling Party A to withdraw the funds immediately, bypassing the `challengeDelay`.
+3.  **`confirmCancelPayment()`:** Allows Party B to confirm Party A's payment cancellation, enabling Party A to withdraw the funds immediately, bypassing the `cancelDelay`.
 4.  **`withdraw(address token, uint256 amount)`:** This function facilitates token withdrawals:
     * **For Party B:** When `paymentDelay` has elapsed, or `confirmPayment()` has been called.
-    * **For Party A:** When `challengeDelay` has elapsed, or `confirmChallenge()` has been called (after a successful challenge).
+    * **For Party A:** When `cancelDelay` has elapsed, or `confirmCancelPayment()` has been called (after a payment cancellation).
     * **For Either Party:** When the corresponding party's `disputeDelay` has elapsed in the disputable flow.
-5.  **`challenge()`:** Allows Party A to initiate a challenge, preventing Party B from withdrawing for `challengeDelay` seconds.
-6.  **`dispute()`:** Allows either Party A or Party B to dispute an ongoing challenge or re-dispute, respectively, extending the dispute resolution process.
+5.  **`cancelPayment()`:** Allows Party A to initiate a cancellation of the payment.
+6.  **`dispute()`:** Allows either Party A or Party B to dispute an ongoing payment cancellation or re-dispute, respectively, extending the dispute resolution process.
 
 ---
 
@@ -79,4 +79,4 @@ npm run test                  # Run all unit tests
 REPORT_GAS=true npm run test  # Run tests and generate a gas usage report
 
 npx hardhat node              # Start a local Hardhat network node
-npx hardhat ignition deploy ./ignition/modules/Deploy.ts # Deploy contracts using Hardhat Ignition
+npm run deploy:test           # Deploy contracts to test chain using Hardhat Ignition
