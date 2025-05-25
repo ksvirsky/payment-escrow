@@ -17,17 +17,17 @@ The `PaymentEscrowFactory` contract facilitates the creation of `PaymentEscrow` 
 This flow represents a successful payment from Party A to Party B.
 
 1.  **Contract Configuration & Funding:** Party A deploys the `PaymentEscrow` contract and transfers the agreed-upon tokens to it.
-2.  **Payment Condition:** Party B awaits for the `paymentDelay` period to elapse, or Party A can call `confirmPayment()` to immediately enable withdrawal.
-3.  **Withdrawal:** After the `paymentDelay` or explicit confirmation by Party A, Party B can withdraw all tokens from the contract.
+2.  **Payment Condition:** Party B awaits for the `paymentDelay` period to elapse. Alternatively, Party A can call `confirmPayment()` to immediately enable Party B's withdrawal, bypassing the delay.
+3.  **Withdrawal:** After the `paymentDelay` has passed or explicit confirmation by Party A, Party B can withdraw all tokens from the contract.
 
 ##### 2. Cancel Payment Flow (by Party A)
 
 This flow allows Party A to cancel the payment before Party B can withdraw.
 
 1.  **Contract Configuration & Funding:** Party A deploys the `PaymentEscrow` contract and transfers the agreed-upon tokens to it.
-2.  **Cancel Payment Initiation:** During the `paymentDelay` period, Party A invokes the `cancelPayment()` function to initiate a cancellation.
-3.  **Cancel Payment Condition:** Party A waits for the `cancelDelay` period to elapse, or Party B can call `confirmCancelPayment()` to immediately allow Party A's withdrawal.
-4.  **Withdrawal:** After the `cancelDelay` or explicit confirmation by Party B, Party A can withdraw all tokens from the contract.
+2.  **Cancellation Initiation:** During the `paymentDelay` period, Party A invokes the `cancelPayment()` function to initiate a cancellation.
+3.  **Cancellation Condition:** Party A waits for the `cancelDelay` period to elapse. Alternatively, Party B can call `confirmCancelPayment()` to immediately allow Party A to withdraw the funds, bypassing the delay.
+4.  **Withdrawal:** After the `cancelDelay` has passed or explicit confirmation by Party B, Party A can withdraw all tokens from the contract.
 
 ##### 3. Disputable Flow (Dispute Resolution)
 
@@ -36,7 +36,7 @@ This flow is initiated if Party B disputes Party A's cancellation of payment.
 1.  **Dispute Initiation:** This flow begins when Party B calls the `dispute()` function during Party A's `cancelDelay` period (from the Cancel Payment Flow, step 3).
 2.  **Party B's Waiting Period:** Party B must wait for the `disputeDelay` period to elapse. After this period, Party B can withdraw the funds.
 3.  **Party A's Re-dispute:** Party A can then re-dispute by calling `dispute()` again. Party A must then wait for another `disputeDelay` period to elapse to regain the ability to withdraw the funds.
-4.  **Flow Termination:** The disputable flow concludes when either Party A or Party B chooses not to re-dispute, allowing the other party to withdraw the funds. Alternatively, the flow can be terminated if one of the parties calls `confirmPayment()` (by Party A, leading to Party B's withdrawal) or `confirmCancelPayment()` (by Party B, leading to Party A's withdrawal).
+4.  **Flow Termination:** The disputable flow concludes when either Party A or Party B chooses not to re-dispute, allowing the other party to withdraw the funds. Alternatively, the flow can be terminated if Party A calls `confirmPayment()` (leading to Party B's withdrawal) or if Party B calls `confirmCancelPayment()` (leading to Party A's withdrawal).
 
 #### Configuration Parameters:
 
@@ -44,7 +44,7 @@ Each `PaymentEscrow` contract is created with the following configurable paramet
 
 * `targetAddress`: The account address of Party B.
 * `paymentDelay`: The duration (in seconds) after which Party B is allowed to withdraw funds in the normal flow.
-* `cancelDelay`:  The duration (in seconds) defines the waiting period for Party A to allow withdrawals after cancellation of the payment.
+* `cancelDelay`: The duration (in seconds) that defines the waiting period for Party A to withdraw funds after initiating a payment cancellation.
 * `disputeDelay`: The duration (in seconds) that each party must wait during the disputable flow after initiating a dispute or re-dispute.
 
 #### `PaymentEscrow` Contract Functions & Features:

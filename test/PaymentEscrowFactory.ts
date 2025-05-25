@@ -8,6 +8,8 @@ import hre from "hardhat";
 import { deployBeaconWithImpl, deployProxy } from "./utils";
 import { PaymentEscrowFactory } from "../typechain-types";
 
+const DAY = 24 * 60 * 60;
+
 describe("PaymentEscrowFactory", function () {
   async function deployFactoryFixture() {
     // Contracts are deployed using the first signer/account by default
@@ -42,17 +44,25 @@ describe("PaymentEscrowFactory", function () {
   it("Should not allow to set beacons for non-admins", async function () {
     const { paymentEscrowFactory, deployer, admin } = await deployFactoryFixture();
 
-    expect(paymentEscrowFactory.connect(deployer).setEscrowBeacon(2, admin.address))
+    await expect(paymentEscrowFactory.connect(deployer).setEscrowBeacon(2, admin.address))
       .to.be.revertedWithCustomError(paymentEscrowFactory, "OwnableUnauthorizedAccount")
       .withArgs(deployer.address);
   });
 
   it("Should allow to create escrow to anyone", async function () {
     const { paymentEscrowFactory, partyA, partyB } = await deployFactoryFixture();
-    const DAY = 24 * 60 * 60;
+
     const tx = await paymentEscrowFactory.connect(partyA).createEscrow(1, partyB.address, 3 * DAY, 3 * DAY, 30 * DAY);
 
     await expect(tx).to.emit(paymentEscrowFactory, "EscrowCreated")
       .withArgs(anyValue, 1, partyA.address, partyB.address, 3 * DAY, 3 * DAY, 30 * DAY);
+  });
+
+  it("Should revert to create escrow when version beacon is unset", async function () {
+    const { paymentEscrowFactory, partyA, partyB } = await deployFactoryFixture();
+
+    await expect(paymentEscrowFactory.connect(partyA).createEscrow(2, partyB.address, 3 * DAY, 3 * DAY, 30 * DAY))
+      .to.be.revertedWithCustomError(paymentEscrowFactory, "NoBeaconFoundError")
+      .withArgs(2);
   });
 });
