@@ -16,7 +16,7 @@ export default buildModule("DeployFactory", (m) => {
 
   const pef = m.contractAt("PaymentEscrowFactory", paymentEscrowFactory, {id: "PaymentEscrowFactoryProxy"});
 
-  m.call(pef, "setBeacon", [1, escrowV1Beacon], {id: "setEscrowV1Beacon"});
+  m.call(pef, "setEscrowBeacon", [1, escrowV1Beacon], {id: "setEscrowV1Beacon"});
   m.call(pef, "transferOwnership", [adminAddress], {id: "transferOwnership"});
 
   return { paymentEscrowFactory, escrowV1Beacon };
