@@ -123,7 +123,8 @@ contract PaymentEscrowV1 is Initializable {
     function withdraw(address token, uint256 amount) external {
         if (msg.sender == partyB && (
             state == State.PaymentConfirmed ||
-            state == State.Pending && (stateChangedAt + paymentDelay <= block.timestamp))) {
+            state == State.Pending && (stateChangedAt + paymentDelay <= block.timestamp) ||
+            state == State.DisputedByPartyB && (stateChangedAt + disputeDelay <= block.timestamp))) {
 
             IERC20(token).transfer(partyB, amount);
 
@@ -132,7 +133,8 @@ contract PaymentEscrowV1 is Initializable {
 
         if (msg.sender == partyA && (
             state == State.CancelPaymentConfirmed ||
-            state == State.CancelPaymentPending && (stateChangedAt + cancelDelay <= block.timestamp))) {
+            state == State.CancelPaymentPending && (stateChangedAt + cancelDelay <= block.timestamp) ||
+            state == State.DisputedByPartyA && (stateChangedAt + disputeDelay <= block.timestamp))) {
             IERC20(token).transfer(partyA, amount);
 
             return;
