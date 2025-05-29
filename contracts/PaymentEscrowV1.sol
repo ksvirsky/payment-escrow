@@ -135,6 +135,7 @@ contract PaymentEscrowV1 is Initializable {
             state == State.CancelPaymentConfirmed ||
             state == State.CancelPaymentPending && (stateChangedAt + cancelDelay <= block.timestamp) ||
             state == State.DisputedByPartyA && (stateChangedAt + disputeDelay <= block.timestamp))) {
+
             IERC20(token).transfer(partyA, amount);
 
             return;

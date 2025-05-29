@@ -4,6 +4,30 @@ This project implements a basic payment escrow functionality, enabling secure tr
 
 ---
 
+## ⚠️ Disclaimer: Demo Project ⚠️
+
+**This project is a demo and proof-of-concept. It has NOT been audited and is NOT suitable for production use with real funds. Use it for educational and testing purposes only.**
+
+---
+
+## Demo & Testing on Polygon Amoy
+
+You can test the contract functionality using a deployed demo UI on the Polygon Amoy testnet:
+
+* **Demo UI:** [https://ksvirsky.github.io/payment-escrow-demo/](https://ksvirsky.github.io/payment-escrow-demo/)
+
+### Deployed Contract Addresses on Polygon Amoy:
+
+* **PaymentEscrowFactory Address:** `0x9a91dCbf35E5a8d929970A1c81aCcAa8875764Ec`
+* **Mock ERC-20 Token Contract:** `0xD629B37f222deDE7e405f2a4aA678C6423e3b9b7`
+
+To obtain mock tokens for testing:
+* Use the `mint(address, uint)` method on the Mock ERC-20 token contract.
+* **Convenient Minting Tool:** [https://ksvirsky.github.io/?chainId=80002&address=0xD629B37f222deDE7e405f2a4aA678C6423e3b9b7&signature=mint%28address+a%2C+uint256+amount%29&args=0xYourAddress%2C+1000000000000000000000000&mode=write](https://ksvirsky.github.io/?chainId=80002&address=0xD629B37f222deDE7e405f2a4aA678C6423e3b9b7&signature=mint%28address+a%2C+uint256+amount%29&args=0xYourAddress%2C+1000000000000000000000000&mode=write)
+    *(Remember to replace `0xYourAddress` in the `args` with your actual Polygon Amoy wallet address when using the tool.)*
+
+---
+
 ## Implementation
 
 ### V1
